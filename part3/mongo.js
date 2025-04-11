@@ -14,33 +14,33 @@ const personSchema = new mongoose.Schema({
 })
 
 personSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    }
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 const Person = mongoose.model('Person', personSchema)
 
 if (process.argv.length === 3) {
-    Person.find({}).then(result => {
-        console.log('Phonebook:')
-        result.forEach(person => {
-            console.log(`${person.names} ${person.number}`)
-        })
-        mongoose.connection.close()
+  Person.find({}).then(result => {
+    console.log('Phonebook:')
+    result.forEach(person => {
+      console.log(`${person.names} ${person.number}`)
     })
-} else if (process.argv.length > 4) {
-    const person = new Person({
-        names: names,
-        number: number,
-    })
-    person.save().then(result => {
-        console.log(`added ${names} ${number} to phonebook`)
-        mongoose.connection.close()
-    })
-} else {
-    console.log('Please provide password, names and number')
     mongoose.connection.close()
+  })
+} else if (process.argv.length > 4) {
+  const person = new Person({
+    names: names,
+    number: number,
+  })
+  person.save().then(result => {
+    console.log(`added ${names} ${number} to phonebook`)
+    mongoose.connection.close()
+  })
+} else {
+  console.log('Please provide password, names and number')
+  mongoose.connection.close()
 }
