@@ -10,29 +10,25 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs)
 })
   
-blogsRouter.post('/', async (request, response) => {
-  try {
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({ error: 'token invalid' })
-    }
-    const user = await User.findById(decodedToken.id)
+blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
+  const user = await User.findById(request.user.id)
 
-    const blog = new Blog(request.body)
-    blog.user = user._id
-    const savedBlog = await blog.save()
-    user.blogs = user.blogs.concat(savedBlog._id)
-    await user.save()
-    response.status(201).json(savedBlog)
-
-  } catch (error) {
-    if (error.name === 'ValidationError') {
-      return response.status(400).json({ error: error.message })
-    }
-  }
+  const blog = new Blog(request.body)
+  blog.user = user._id
+  const savedBlog = await blog.save()
+  user.blogs = user.blogs.concat(savedBlog._id)
+  await user.save()
+  response.status(201).json(savedBlog)
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+  if (!blog) {
+    return response.status(404).json({ error: 'blog not found' })
+  }
+  if (blog.user.toString() !== request.user.id) {
+    return response.status(401).json({ error: 'unauthorized' })
+  }
   await Blog.findByIdAndDelete(request.params.id)
   response.status(204).end()
 })

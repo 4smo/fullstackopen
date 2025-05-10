@@ -21,7 +21,7 @@ const invalidPassword = {
     password: "a"
 }
 
-test.only('invalid username', async () => {
+test('invalid username', async () => {
     await api
         .post('/api/users')
         .send(invalidUsername)

@@ -1,10 +1,10 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNpbW8iLCJpZCI6IjY4MTVkODBhOWM3MTE2NWYwN2M2MGQwZSIsImlhdCI6MTc0NjI2MzA1NH0.aGbQKx3FxDUT7kNeGxU5k5fb7LrX-WT61GIS7jGPMPs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJpZCI6IjY4MWEwYzI1MWE4NmZhOWU4MDc3ODQzNSIsImlhdCI6MTc0Njg4Mjc0NH0.kl9ktusCYEGtpIZXdwcR1Z9wXMEJdO2wZqcc573v1Aw
 
 {
-    "title": "Test Blog",
-    "author": "Test Author",
-    "url": "https://test.com",
-    "likes": 10
+    "title": "Test delete3",
+    "author": "Test Author1212",
+    "url": "https://test.com1212",
+    "likes": 1011
 }

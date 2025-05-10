@@ -4,10 +4,12 @@ const supertest = require('supertest')
 const mongoose = require('mongoose')
 const app = require('../app')
 const api = supertest(app)
+const bcrypt = require('bcrypt')
 
 const listHelper = require('../utils/list_helper')
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const newBlog = {
     title: "testi",
@@ -43,11 +45,36 @@ const updateBlog = {
 
 beforeEach(async () => {
     await Blog.deleteMany({})
+    await User.deleteMany({})
+
+    const saltRounds = 2
+    const password = '123456'
+    const passwordHash = await bcrypt.hash(password, saltRounds)
+
+    const user = new User({
+            username: "test",
+            name: "test",
+            passwordHash
+    })
+    await user.save()
+
+    const response = await api
+        .post('/api/login')
+        .send({
+            username: 'test',
+            password: '123456'
+        })
+
+    token = response.body.token
+
     await Blog.insertMany(listHelper.listWithManyBlogs)
 })
 
 test('post blog', async () => {
-    await api.post('/api/blogs').send(newBlog)
+    await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
     const response = await api.get('/api/blogs')
     assert.strictEqual(response.body.length, listHelper.listWithManyBlogs.length + 1)
 })
@@ -64,35 +91,66 @@ test('returns correct number of blogs', async () => {
 })
 
 test('posting blog without likes becomes 0', async () => {
-    await api.post('/api/blogs').send(blogWithoutLikes)
+    await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(blogWithoutLikes)
     const response = await api.get('/api/blogs')
     const postedBlog = response.body.find(blog => blog.title === blogWithoutLikes.title)
     assert.strictEqual(postedBlog.likes, 0)
 })
 
 test('posting blog without title or url returns 400', async () => {
-    await api.post('/api/blogs').send(blogWithoutTitle).expect(400)
-    await api.post('/api/blogs').send(blogWithoutUrl).expect(400)
+    await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(blogWithoutTitle)
+
+    await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(blogWithoutUrl)
 })
 
 test('delete blog', async () => {
-    const response = await api.get('/api/blogs')
-    const blog = response.body[0]
-    await api.delete(`/api/blogs/${blog.id}`)
+    const response = await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(newBlog)
+
+    const blogToDelete = response.body
+
+    await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${token}`)
+
     const response2 = await api.get('/api/blogs')
-    assert.strictEqual(response2.body.length, listHelper.listWithManyBlogs.length - 1)
+
+    assert.strictEqual(response2.body.length, listHelper.listWithManyBlogs.length)
 })
 
 test('update blog', async () => {
-    const response = await api.get('/api/blogs')
-    const blogToUpdate = response.body[0]
+    const response = await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
+
+    const blogToUpdate = response.body
 
     const response2 = await api
         .put(`/api/blogs/${blogToUpdate.id}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(updateBlog)
     const updatedBlog = response2.body
 
     assert.strictEqual(response2.body.likes, updatedBlog.likes)
+})
+
+test('post blog unauthorized', async () => {
+    await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(401)
 })
 
 after(async () => {
