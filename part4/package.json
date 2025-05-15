@@ -2,11 +2,11 @@
   "name": "part4",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "start": "cross-env NODE_ENV=production node index.js",
-    "dev": "cross-env NODE_ENV=development node --watch index.js",
-    "test": "cross-env NODE_ENV=test node --test"
-  },
+    "scripts": {
+      "start": "cross-env NODE_ENV=production node index.js",
+      "dev": "cross-env NODE_ENV=development node --watch index.js",
+      "test": "cross-env NODE_ENV=test node --test"
+    },
   "keywords": [],
   "author": "",
   "license": "ISC",
